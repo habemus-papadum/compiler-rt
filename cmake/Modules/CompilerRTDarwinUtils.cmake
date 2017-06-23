@@ -4,6 +4,19 @@ include(CMakeParseArguments)
 # set the default Xcode to use. This function finds the SDKs that are present in
 # the current Xcode.
 function(find_darwin_sdk_dir var sdk_name)
+
+  # lilinjn -- the logic below does not mesh with our approach of rsync'ing the sdk's
+  # out of xcode (so that portions can be overridden e.g. libc++)
+  # so we override here:
+  if (${sdk_name} MATCHES macosx)  ## lilinjn hack
+    if (NOT DEFAULT_SYSROOT)
+      message(FATAL_ERROR "lilinjn hack is being aborted.  expected DEFAULT_SYSROOT to be defined")
+    endif()
+    set(${var} ${DEFAULT_SYSROOT} PARENT_SCOPE)
+    set(DARWIN_${sdk_name}_CACHED_SYSROOT ${var_internal} CACHE STRING "Darwin SDK path for SDK ${sdk_name}." FORCE)
+    return()
+  endif()
+
   set(DARWIN_${sdk_name}_CACHED_SYSROOT "" CACHE STRING "Darwin SDK path for SDK ${sdk_name}.")
   set(DARWIN_PREFER_PUBLIC_SDK OFF CACHE BOOL "Prefer Darwin public SDK, even when an internal SDK is present.")
 
@@ -57,7 +70,10 @@ function(darwin_get_toolchain_supported_archs output_var)
     message(WARNING "Detecting supported architectures from 'ld -v' failed. Returning default set.")
     set(ARCHES "i386;x86_64;armv7;armv7s;arm64")
   endif()
-  
+
+  ## lilinjn: Support only x86_64 for now
+  set(ARCHES "x86_64")
+
   set(${output_var} ${ARCHES} PARENT_SCOPE)
 endfunction()
 
