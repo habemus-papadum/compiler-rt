@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <system_error>
 #include <thread>
+#include <array>
 #include <unistd.h>
 
 #include "xray/xray_records.h"
